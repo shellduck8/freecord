@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreeCord</title>
+    <link href="./css/style.css" rel="stylesheet">
+    <script src="/js/script.js" defer></script>
+    <link rel="icon" href="/media/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>FreeCord</h2>
+            <label for="username">Username:</label>
+            <input type="text" id="username" placeholder="Enter your username">
+            <button id="joinBtn">Join</button>
+            <button id="leaveBtn">Leave</button>
+            <button id="muteBtn">Mute/Unmute</button>
+        </div>
+
+        <div class="main">
+            <div class="soundboard-container">
+                <h3>Soundboard:</h3>
+                <input type="file" id="uploadAudio" accept="audio/*">
+                <div id="soundboard"></div>
+                <div id="controls">
+                    <label for="volumeSlider">Volume:</label>
+                    <input type="range" id="volumeSlider" min="0" max="100" step="1" value="100">
+                    <button id="stopSoundsBtn">Stop All Sounds</button>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div class="sidebar">
+                    <h3>In Call:</h3>
+                    <div id="userList"></div>
+                </div>
+
+                <div class="content">
+                    <h3>Text Chat:</h3>
+                    <div id="chatContainer">
+                        <div id="chatMessages"></div>
+                        <input type="text" id="chatInput" placeholder="Type a message">
+                        <button id="sendBtn">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

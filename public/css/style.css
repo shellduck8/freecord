@@ -1,0 +1,230 @@
+/* Discord-like color palette */
+:root {
+    --background-dark: #2c2f33;
+    --background-light: #23272a;
+    --primary: #7289da;
+    --primary-hover: #677bc4;
+    --text-light: #ffffff;
+    --text-dark: #99aab5;
+    --border-color: #4f545c;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+    background-color: var(--background-dark);
+    color: var(--text-light);
+}
+
+.container {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: var(--background-light);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.header h2 {
+    flex-basis: 100%;
+    text-align: center;
+    color: var(--text-light);
+}
+
+.header label,
+.header input,
+.header button {
+    color: var(--text-light);
+}
+
+.header input {
+    background-color: var(--background-light);
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    border-radius: 4px;
+    color: var(--text-light);
+}
+
+.header button {
+    background-color: var(--primary);
+    border: none;
+    color: var(--text-light);
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.header button:hover {
+    background-color: var(--primary-hover);
+}
+
+.main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.soundboard-container {
+    background-color: var(--background-light);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.chat-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+}
+
+.sidebar {
+    background-color: var(--background-light);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.content {
+    background-color: var(--background-light);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+#userList {
+    margin-top: 20px;
+    text-align: left;
+    display: inline-block;
+}
+
+.user {
+    padding: 5px;
+}
+
+.speaking {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+#soundboard {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.soundboard-item {
+    display: flex;
+    align-items: center;
+    margin: 4px 2px;
+}
+
+.soundboard-button {
+    background-color: var(--primary);
+    border: none;
+    color: var(--text-light);
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+
+.soundboard-button:hover {
+    background-color: var(--primary-hover);
+}
+
+#controls {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#volumeSlider {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+#stopSoundsBtn {
+    background-color: #f44336;
+    border: none;
+    color: var(--text-light);
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+
+#stopSoundsBtn:hover {
+    background-color: #d32f2f;
+}
+
+#chatContainer {
+    margin-top: 20px;
+    text-align: left;
+    display: inline-block;
+    width: 100%;
+    max-width: 600px;
+}
+
+#chatMessages {
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    height: 200px;
+    overflow-y: scroll;
+    background-color: var(--background-light);
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+}
+
+#chatInputContainer {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+#chatInput {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-light);
+    color: var(--text-light);
+}
+
+#sendBtn {
+    padding: 10px 20px;
+    margin-left: 10px;
+    background-color: var(--primary);
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+#sendBtn:hover {
+    background-color: var(--primary-hover);
+}
