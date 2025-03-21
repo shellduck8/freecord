@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const socket = new WebSocket("https://your-domain.com"); // Replace with your server URL
+    const socket = new WebSocket("https://1bc4-84-199-37-243.ngrok-free.app"); // Replace with your server URL
     const peerConnections = {};
     const configuration = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
     let localStream;
@@ -116,27 +116,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     socket.onmessage = async (event) => {
-        const data = JSON.parse(event.data);
-        console.log("Received message:", data);
+        try {
+            const data = JSON.parse(event.data);
+            console.log("Received message:", data);
 
-        if (data.type === "updateUsers") {
-            updateUserList(data.users);
-        } else if (data.type === "offer") {
-            await handleOffer(data.offer, data.sender);
-        } else if (data.type === "answer") {
-            await handleAnswer(data.answer, data.sender);
-        } else if (data.type === "ice-candidate") {
-            if (peerConnections[data.sender]) {
-                await peerConnections[data.sender].addIceCandidate(new RTCIceCandidate(data.candidate));
+            if (data.type === "updateUsers") {
+                updateUserList(data.users);
+            } else if (data.type === "chat") {
+                addChatMessage(data.username, data.message, data.isAdmin);
+            } else if (data.type === "offer") {
+                await handleOffer(data.offer, data.sender);
+            } else if (data.type === "answer") {
+                await handleAnswer(data.answer, data.sender);
+            } else if (data.type === "ice-candidate") {
+                if (peerConnections[data.sender]) {
+                    await peerConnections[data.sender].addIceCandidate(new RTCIceCandidate(data.candidate));
+                }
+            } else if (data.type === "kick") {
+                handleKick();
+            } else {
+                console.warn("Unknown message type:", data.type);
             }
-        } else if (data.type === "offer-request") {
-            await sendOfferToUser(data.sender);
-        } else if (data.type === "speaking") {
-            updateSpeakingStatus(data.username, data.speaking);
-        } else if (data.type === "chat") {
-            addChatMessage(data.username, data.message, data.isAdmin);
-        } else if (data.type === "kick") {
-            handleKick();
+        } catch (error) {
+            console.error("Error processing WebSocket message:", error);
         }
     };
 
@@ -177,12 +179,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const peerConnection = new RTCPeerConnection(configuration);
         peerConnections[remoteSocketId] = peerConnection;
 
+        // Add local stream tracks to the peer connection
         if (localStream) {
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, destination.stream));
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
         } else {
             console.error("Local stream is not available when creating peer connection");
         }
 
+        // Handle ICE candidates
         peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
                 console.log("Sending ICE candidate");
@@ -194,6 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         };
 
+        // Handle remote stream
         peerConnection.ontrack = (event) => {
             console.log("Received remote track from:", remoteSocketId);
             let audio = document.getElementById(`audio-${remoteSocketId}`);
@@ -314,7 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const message = chatInput.value.trim();
         if (message) {
             socket.send(JSON.stringify({ type: "chat", username, message }));
-            chatInput.value = "";
+            chatInput.value = ""; // Clear the input field
         }
     });
 
@@ -324,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const message = chatInput.value.trim();
             if (message) {
                 socket.send(JSON.stringify({ type: "chat", username, message }));
-                chatInput.value = "";
+                chatInput.value = ""; // Clear the input field
             }
         }
     });
@@ -338,6 +343,6 @@ document.addEventListener("DOMContentLoaded", () => {
             messageElement.textContent = `${username}: ${message}`;
         }
         chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the latest message
     }
 });

@@ -8,6 +8,7 @@ const record = require("node-record-lpcm16");
 const ffmpeg = require("fluent-ffmpeg");
 const ffmpegPath = require("ffmpeg-static");
 const { spawn } = require('child_process');
+var log = "";
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -19,6 +20,10 @@ let users = {}; // Store connected users
 let recordingStream = null;
 let recordingFile = null;
 let soxProcess = null;
+
+function generateUserId() {
+    return Math.random().toString(36).substr(2, 9);
+}
 
 function logConnectedUsers() {
     console.log("Connected users:");
@@ -34,30 +39,67 @@ function broadcastMessage(message) {
     Object.values(users).forEach(user => user.ws.send(JSON.stringify(message)));
 }
 
-wss.on("connection", (ws, req) => {
-    const userId = req.socket.remoteAddress; // Use IP address as userId
+wss.on("connection", (ws) => {
+    const userId = generateUserId(); // Generate a random user ID
 
     ws.on("message", (message) => {
-        const data = JSON.parse(message);
-
+        try{
+            const data = JSON.parse(message);
         if (data.type === "join") {
             users[userId] = { ws, username: data.username };
             console.log(`User joined: ${data.username} (ID: ${userId})`);
-            logConnectedUsers();
-            broadcastUsers();
-            notifyExistingUsers(userId); // Tell existing users to connect to the new user
-        } else if (data.type === "leave") {
-            console.log(`User left: ${users[userId].username} (ID: ${userId})`);
-            delete users[userId];
+            log += `User joined: ${data.username} (ID: ${userId})\n`; // Add to log
             logConnectedUsers();
             broadcastUsers();
         } else if (data.type === "offer" || data.type === "answer" || data.type === "ice-candidate") {
-            sendToUser(data.receiver, { ...data, sender: userId });
-        } else if (data.type === "speaking") {
-            broadcastMessage({ type: "speaking", username: data.username, speaking: data.speaking });
+            // Relay signaling messages to the intended receiver
+            if (users[data.receiver]) {
+                users[data.receiver].ws.send(JSON.stringify({ ...data, sender: userId }));
+            }
+        } else if (data.type === "leave") {
+            console.log(`User left: ${users[userId].username} (ID: ${userId})`);
+            log += `User left: ${users[userId].username} (ID: ${userId})\n`; // Add to log
+            delete users[userId];
+            logConnectedUsers();
+            broadcastUsers();
         } else if (data.type === "chat") {
-            broadcastMessage({ type: "chat", username: data.username, message: data.message });
+            console.log(`[CHAT] ${data.username}: ${data.message}`);
+            log += `[CHAT] ${data.username}: ${data.message}\n`;
+            broadcastMessage({ type: "chat", username: users[userId].username, message: data.message });
+        } else if (data.type === "audio") {
+            if (recordingStream) {
+                recordingStream.write(data.audio);
+            }
+        } else if (data.type === "startRecording") {
+            const outputFilePath = path.join(__dirname, "servermedia", "recordings", `recording_${Date.now()}.wav`);
+            recordingStream = fs.createWriteStream(outputFilePath);
+            recordingFile = outputFilePath;
+            console.log("Recording started.");
+            log += "Recording started.\n"; // Add to log
+        } else if (data.type === "stopRecording") {
+            if (recordingStream) {
+                recordingStream.end();
+                recordingStream = null;
+                console.log("Recording stopped.");
+                log += "Recording stopped.\n"; // Add to log
+                // Convert the recording to MP3 format
+                ffmpeg()
+                    .input(recordingFile)
+                    .output(path.join(__dirname, "servermedia", "recordings", `recording_${Date.now()}.mp3`))
+                    .on("end", () => {
+                        console.log("Recording converted to MP3.");
+                        log += "Recording converted to MP3.\n"; // Add to log
+                    })
+                    .on("error", (error) => {
+                        console.error("Error converting recording to MP3:", error);
+                    })
+                    .run();
+            }
         }
+    } catch(error){
+        console.error("Error parsing JSON message", error);
+    }
+        
     });
 
     ws.on("close", () => {
@@ -68,20 +110,6 @@ wss.on("connection", (ws, req) => {
             broadcastUsers();
         }
     });
-
-    function sendToUser(receiver, message) {
-        if (users[receiver]) {
-            users[receiver].ws.send(JSON.stringify(message));
-        }
-    }
-
-    function notifyExistingUsers(newUserId) {
-        Object.keys(users).forEach(existingUserId => {
-            if (existingUserId !== newUserId) {
-                sendToUser(existingUserId, { type: "offer-request", sender: newUserId });
-            }
-        });
-    }
 });
 
 // Admin CLI
@@ -131,8 +159,24 @@ rl.on("line", (input) => {
         process.exit(0);
     }
     else if (command === "adminmsg") {
-        const message = args.join(" ");
+        const message = args.join(" ").trim();
+        if (!message) {
+            console.log("Error: Message cannot be empty.");
+            return;
+        }
         broadcastMessage({ type: "chat", username: "Admin", message, isAdmin: true });
+        console.log(`[ADMIN] ${message}`);
+        log += `[ADMIN] ${message}\n`; // Add to log
+    }
+    else if (command === "printlog") {
+        const logFilePath = path.join(__dirname, "servermedia", "log.txt");
+        fs.writeFile(logFilePath, log, function(err) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log("The log file was saved!");
+            }
+        });
     }
     else {
         console.log("Unknown command");
@@ -184,6 +228,18 @@ function stopRecording() {
     soxProcess = null;
 
     console.log("Recording stopped.");
+}
+
+function addChatMessage(username, message, isAdmin = false) {
+    const chatMessages = document.getElementById("chatMessages");
+    const messageElement = document.createElement("div");
+    if (isAdmin) {
+        messageElement.innerHTML = `<span style="color: red; font-weight: bold;">ADMIN:</span> ${message}`;
+    } else {
+        messageElement.textContent = `${username}: ${message}`;
+    }
+    chatMessages.appendChild(messageElement);
+    chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the latest message
 }
 
 app.use(express.static("public"));

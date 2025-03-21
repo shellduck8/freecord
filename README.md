@@ -6,16 +6,17 @@ FreeCord is a Discord-like voice and text chat application that allows users to 
 
 ## Features
 
-- Voice chat with WebRTC
-- Text chat with WebSocket
-- Soundboard for playing audio files locally
-- Admin CLI for managing users and recording voice chat
-- Recording functionality to save voice chat as MP3 files
+- **Voice Chat**: Communicate with others using WebRTC.
+- **Text Chat**: Send and receive messages in real-time using WebSocket.
+- **Soundboard**: Play audio files locally with sleek buttons.
+- **Admin CLI**: Manage users, send admin messages, and record voice chat.
+- **Recording**: Save voice chat as MP3 files for later use.
+- **Logs**: Maintain a log of user activity and chat messages.
 
 ## Prerequisites
 
-- Node.js and npm installed
-- ngrok for exposing your local server to the internet
+- [Node.js](https://nodejs.org/) and npm installed
+- [ngrok](https://ngrok.com/) for exposing your local server to the internet
 
 ## Getting Started
 
@@ -45,52 +46,64 @@ ngrok http 3000
 
 ### Configure WebSocket URL
 
-1. Open `public/js/script.js`.
-2. Replace the WebSocket URL with your ngrok HTTPS URL:
+1. Open `public/js/config.js`.
+2. Replace the `websocketUrl` value with your ngrok HTTPS URL:
 
 ```javascript
-const socket = new WebSocket("https://d79f-84-199-37-243.ngrok-free.app"); // Replace with your ngrok URL
+const config = {
+    websocketUrl: "https://d79f-84-199-37-243.ngrok-free.app" // Replace with your ngrok URL
+};
 ```
 
 ### Start the Server
 
 ```sh
-npm start
+node server.js
 ```
 
 ### Open the Application
 
-1. Open your browser and navigate to `http://localhost:3000`.
+1. Open your browser and navigate to your given link.
 2. Enter a username and click "Join" to start using FreeCord.
 
 ## Admin CLI
 
-The admin CLI allows you to manage users and record voice chat. Here are some available commands:
+The admin CLI allows you to manage users, send admin messages, and record voice chat. Here are the available commands:
 
 - `users`: List all connected users.
 - `getUserId <username>`: Get the user ID for a given username.
 - `kick <username|userId>`: Kick a user by username or user ID.
 - `record start`: Start recording the voice chat.
 - `record stop`: Stop recording the voice chat and save the MP3 file in the `servermedia/recordings` folder.
-- `adminmsg <message>`: Send a message as the admin in the text chat.
+- `adminmsg <message>`: Send a message as the admin in the text chat. Admin messages appear in red to distinguish them from regular users.
+- `printlog`: Save the activity log (user joins, leaves, and chat messages) to `servermedia/log.txt`.
+- `stop`: Stop the server.
 
 ## Project Structure
 
 ```
 discordclone/
+├── LICENSE
 ├── package.json
+├── README.md
 ├── server.js
 ├── public/
 │   ├── index.html
 │   ├── css/
 │   │   └── style.css
 │   ├── js/
+│   │   ├── config.js
 │   │   └── script.js
 │   └── media/
 │       └── favicon.ico
 └── servermedia/
+    ├── log.txt
     └── recordings/
 ```
+
+## Logs
+
+- All user activity (joins, leaves, and chat messages) is logged in memory and can be saved to `servermedia/log.txt` using the `printlog` command in the admin CLI.
 
 ## License
 
